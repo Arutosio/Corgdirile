@@ -11,26 +11,31 @@ namespace Corgdirile
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("--- <-_ Welcome Corgdirile by Arutosio_-> ---");
-            Console.Write("         ~  "); ColorsLines.WriteC("Per informazione consultare la pagina GitHub della repository", Cyan); Console.WriteLine("  ~        ");
-            //Fase Preparing..
-            LineFase("Setup");
-            string pathSource = SetDirectory("Write the path where will get all files: ");
-            string pathDestination = SetDirectory("Inserisci il nome della directori di destinazione: ");
-            //string[] allfiles = Directory.GetFileSystemEntries(pathSource);
-            string[] allfiles = Directory.GetFiles(pathSource, "*", SearchOption.AllDirectories);
-            // Fase Processing..
-            LineFase("Processing");
-            for (int i = 0; i < allfiles.Length; i++) {
-                string fileName = Path.GetFileName(allfiles[i]);
-                string yearFile = File.GetCreationTime(allfiles[i]).Year.ToString();
-                string monthFile = File.GetCreationTime(allfiles[i]).Month.ToString();
-                Console.Write($"File Num: {i+1} - Name: ");ColorsLines.WriteLineC(fileName,Cyan);
-                CreateFolder(pathDestination, yearFile);
-                CreateFolder(Path.Combine(pathDestination, yearFile), yearFile+"-"+monthFile);
-                MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile)); // PathTooLongException move file
-            }
-            LineFase("Process Complete.");
+            Console.WriteLine("  ---        <-_ Welcome Corgdirile by Arutosio_->        ---  ");
+            Console.Write("  ~  "); ColorsLines.WriteC("For more info: https://github.com/Arutosio/Corgdirile", Cyan); Console.WriteLine("  ~  ");
+            do {
+                Console.WriteLine();
+                //Fase Preparing..
+                LineFase("Setup");
+                string pathSource = SetDirectory("Write the path where will get all files: ");
+                string pathDestination = SetDirectory("Inserisci il nome della directori di destinazione: ");
+                //string[] allfiles = Directory.GetFileSystemEntries(pathSource);
+                string[] allfiles = Directory.GetFiles(pathSource, "*", SearchOption.AllDirectories);
+                // Fase Processing..
+                LineFase("Processing");
+                for (int i = 0; i < allfiles.Length; i++) {
+                    string fileName = Path.GetFileName(allfiles[i]);
+                    string yearFile = File.GetCreationTime(allfiles[i]).Year.ToString();
+                    string monthFile = File.GetCreationTime(allfiles[i]).Month.ToString();
+                    Console.Write($"File Num: {i+1} - Name: ");ColorsLines.WriteLineC(fileName,Cyan);
+                    CreateFolder(pathDestination, yearFile);
+                    CreateFolder(Path.Combine(pathDestination, yearFile), yearFile+"-"+monthFile);
+                    MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile)); // PathTooLongException move file
+                }
+                Console.Write("\r\n======> "); ColorsLines.WriteC("PROCESSO CONCLUSO!", Green); Console.WriteLine(" <======");
+                Console.Write("Press the "); ColorsLines.WriteC("Y", Green); Console.Write(" key to execute again the program or press an other key to "); ColorsLines.WriteC("exit", Red); Console.Write(": ");
+            }while(Console.ReadKey().KeyChar.ToString().ToLower().Equals("y"));
+            Console.WriteLine();
         }
         public static string SetDirectory(string dir) {
             Console.Write(dir);
@@ -81,8 +86,8 @@ namespace Corgdirile
         {
             Console.BackgroundColor = ConsoleColor.White; Console.Write("::::::::::::::::::::::");
             ColorsLines.WriteC(text, Black);
-            Console.BackgroundColor = ConsoleColor.White; Console.WriteLine("::::::::::::::::::::::\r\n");
-            Console.ResetColor();
+            Console.BackgroundColor = ConsoleColor.White; Console.Write("::::::::::::::::::::::");
+            Console.ResetColor(); Console.WriteLine();
         }
     }
 }
