@@ -17,23 +17,24 @@ namespace Corgdirile
             //string[] allfiles = Directory.GetFileSystemEntries(pathSource);
             string[] allfiles = Directory.GetFiles(pathSource, "*", SearchOption.AllDirectories);
             for (int i = 0; i < allfiles.Length; i++) {
-                Console.WriteLine(allfiles[i]);
+                string fileName = Path.GetFileName(allfiles[i]);
                 string yearFile = File.GetCreationTime(allfiles[i]).Year.ToString();
                 string monthFile = File.GetCreationTime(allfiles[i]).Month.ToString();
+                Console.Write($"Num: {0} - Filename: ",i);ColorsLines.WriteLineC(fileName,Cyan);
                 CreateFolder(pathDestination, yearFile);
                 Console.WriteLine(Path.Combine(pathDestination, yearFile));
                 CreateFolder(Path.Combine(pathDestination, yearFile), yearFile+"-"+monthFile);
+                MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile)); // PathTooLongException move file
             /*
-                MoveFile(allfiles[i], Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile)); // PathTooLongException move file
             */
             }
         }
         public static string SetDirectory(string dir) {
             Console.Write(dir);
-            dir = ColorsLines.ReadLineC(Yellow);
+            dir = @ColorsLines.ReadLineC(Yellow);
             while(!Directory.Exists(dir)) {
                 Console.Write("The specified directory does not exist.\r\nPlease try again: ");
-                dir = ColorsLines.ReadLineC(Yellow);
+                dir = @ColorsLines.ReadLineC(Yellow);
             }
             return dir;
         }
@@ -65,9 +66,9 @@ namespace Corgdirile
             }
             finally { }
         }
-        public static string MoveFile(string file, string path) {
-            Console.Write("Moving File: "); ColorsLines.WriteLineC(file, Yellow);
-            File.Move(file, path); // PathTooLongException move file
+        public static string MoveFile(string filePath, string fileName,string path) {
+            Console.Write("Moving File: "); ColorsLines.WriteLineC(filePath, Yellow);
+            File.Move(filePath, Path.Combine(path, fileName)); // PathTooLongException move file
             Console.Write("...  "); ColorsLines.WriteLineC("Done!", Green);
             return path;
         }
