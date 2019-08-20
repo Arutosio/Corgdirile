@@ -11,13 +11,16 @@ namespace Corgdirile
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("--- <-_ Welcome Corgdirile by Arutosio_-> ---");
+            Console.Write("         ~  "); ColorsLines.WriteC("Per informazione consultare la pagina GitHub della repository", Cyan); Console.WriteLine("  ~        ");
             //Fase Preparing..
-            Console.WriteLine("AHAHAHAHAHAAHAHAHAHAHAHA");
+            LineFase("Setup");
             string pathSource = SetDirectory("Write the path where will get all files: ");
             string pathDestination = SetDirectory("Inserisci il nome della directori di destinazione: ");
             //string[] allfiles = Directory.GetFileSystemEntries(pathSource);
             string[] allfiles = Directory.GetFiles(pathSource, "*", SearchOption.AllDirectories);
             // Fase Processing..
+            LineFase("Processing");
             for (int i = 0; i < allfiles.Length; i++) {
                 string fileName = Path.GetFileName(allfiles[i]);
                 string yearFile = File.GetCreationTime(allfiles[i]).Year.ToString();
@@ -27,6 +30,7 @@ namespace Corgdirile
                 CreateFolder(Path.Combine(pathDestination, yearFile), yearFile+"-"+monthFile);
                 MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile)); // PathTooLongException move file
             }
+            LineFase("Process Complete.");
         }
         public static string SetDirectory(string dir) {
             Console.Write(dir);
@@ -72,6 +76,13 @@ namespace Corgdirile
             Console.Write("   in to "); ColorsLines.WriteC(newPath+'/', Yellow); ColorsLines.WriteC(fileName, Cyan);
             Console.Write(" ... "); ColorsLines.WriteLineC("Done!\r\n", Green);
             return newPath;
+        }
+        public static void LineFase(string text)
+        {
+            Console.BackgroundColor = ConsoleColor.White; Console.Write("::::::::::::::::::::::");
+            ColorsLines.WriteC(text, Black);
+            Console.BackgroundColor = ConsoleColor.White; Console.WriteLine("::::::::::::::::::::::\r\n");
+            Console.ResetColor();
         }
     }
 }
