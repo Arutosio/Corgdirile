@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using Corgdirile.Library;
 //using static Corgdirile.Library.ColorsLines;
@@ -9,11 +10,15 @@ namespace Corgdirile
 {
     class Program
     {
+        public static ArrayList errorList;
         static void Main(string[] args)
         {
             Console.WriteLine("  ---        <-_ Welcome Corgdirile by Arutosio_->        ---  ");
             Console.Write("  ~  "); ColorsLines.WriteC("For more info: https://github.com/Arutosio/Corgdirile", Cyan); Console.WriteLine("  ~  ");
             do {
+                errorList = new ArrayList();
+                errorList.Add(1);
+                errorList.Add("dasd");
                 Console.WriteLine();
                 //Fase Preparing..
                 LineFase("Setup");
@@ -30,7 +35,7 @@ namespace Corgdirile
                     Console.Write($"File Num: {i+1} - Name: ");ColorsLines.WriteLineC(fileName,Cyan);
                     CreateFolder(pathDestination, yearFile);
                     CreateFolder(Path.Combine(pathDestination, yearFile), yearFile+"-"+monthFile);
-                    MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile)); // PathTooLongException move file
+                    MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile), i+1); // PathTooLongException move file
                 }
                 Console.Write("\r\n======> "); ColorsLines.WriteC("PROCESSO CONCLUSO!", Green); Console.WriteLine(" <======");
                 Console.Write("Press the "); ColorsLines.WriteC("Y", Green); Console.Write(" key to execute again the program or press an other key to "); ColorsLines.WriteC("exit", Red); Console.Write(": ");
@@ -74,12 +79,17 @@ namespace Corgdirile
             }
             finally { }
         }
-        public static string MoveFile(string filePath, string fileName, string newPath) {
+        public static string MoveFile(string filePath, string fileName, string newPath, int numFile) {
             Console.Write("    Moving File: "); 
             ColorsLines.WriteLineC(filePath, DarkYellow);
-            File.Move(filePath, Path.Combine(newPath, fileName)); // PathTooLongException move file
-            Console.Write("   in to "); ColorsLines.WriteC(newPath+'/', Yellow); ColorsLines.WriteC(fileName, Cyan);
-            Console.Write(" ... "); ColorsLines.WriteLineC("Done!\r\n", Green);
+            try {
+                File.Move(filePath, Path.Combine(newPath, fileName)); // PathTooLongException move file
+                Console.Write("   in to "); ColorsLines.WriteC(newPath+'/', Yellow); ColorsLines.WriteC(fileName, Cyan);
+                Console.Write(" ... "); ColorsLines.WriteLineC("Done!\r\n", Green);
+            } catch (Exception e) {
+                Console.Write(" ... "); ColorsLines.WriteLineC("ERROR: \r\n", Red);
+                errorList.Add($"Error with file N:{numFile} - {filePath} MSG:\r\n {e}");
+            }
             return newPath;
         }
         public static void LineFase(string text)
