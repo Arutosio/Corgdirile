@@ -37,7 +37,8 @@ namespace Corgdirile
                     CreateFolder(Path.Combine(pathDestination, yearFile), yearFile+"-"+monthFile);
                     MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile), i+1); // PathTooLongException move file
                 }
-                Console.Write("\r\n======> "); ColorsLines.WriteC("PROCESSO CONCLUSO!", Green); Console.WriteLine(" <======");
+                Console.Write("\r\n======> "); ColorsLines.WriteC("PROCESS FINISH!", Green); Console.WriteLine(" <======");
+                PrintErrors();
                 Console.Write("Press the "); ColorsLines.WriteC("Y", Green); Console.Write(" key to execute again the program or press an other key to "); ColorsLines.WriteC("exit", Red); Console.Write(": ");
             }while(Console.ReadKey().KeyChar.ToString().ToLower().Equals("y"));
             Console.WriteLine();
@@ -91,6 +92,14 @@ namespace Corgdirile
                 errorList.Add($"Error with file N:{numFile} - {filePath} MSG:\r\n {e}");
             }
             return newPath;
+        }
+        public static void PrintErrors() {
+            Console.Write("Do you want print the error files?"); ColorsLines.WriteC("Y", Green);Console.Write('/');ColorsLines.WriteC("AnyKey", Red);
+            if(errorList.Count > 0 && Console.ReadKey().KeyChar.ToString().ToLower().Equals("y"))
+                foreach (var errorFile in errorList)
+                {
+                    Console.WriteLine(errorFile);
+                }
         }
         public static void LineFase(string text)
         {
