@@ -11,37 +11,72 @@ namespace Corgdirile
     class Program
     {
         public static ArrayList errorList;
+        public static int orderBy = 0;
         static void Main(string[] args)
         {
             Console.WriteLine("  ---        <-_ Welcome Corgdirile by Arutosio_->        ---  ");
             Console.Write("  ~  "); ColorsLines.WriteC("For more info: https://github.com/Arutosio/Corgdirile", Cyan); Console.WriteLine("  ~  ");
             do {
                 errorList = new ArrayList();
-                errorList.Add(1);
-                errorList.Add("dasd");
                 Console.WriteLine();
                 //Fase Preparing..
                 LineFase("Setup");
-                string pathSource = SetDirectory("Write the path where will get all files: ");
-                string pathDestination = SetDirectory("Inserisci il nome della directori di destinazione: ");
+                string pathSource = SetDirectory("Write the files path: ");
+                string pathDestination = SetDirectory("Write the destination path: ");
+                ChooseOrder();
                 //string[] allfiles = Directory.GetFileSystemEntries(pathSource);
-                string[] allfiles = Directory.GetFiles(pathSource, "*", SearchOption.AllDirectories);
                 // Fase Processing..
                 LineFase("Processing");
+                string[] allfiles = Directory.GetFiles(pathSource, "*", SearchOption.AllDirectories);
                 for (int i = 0; i < allfiles.Length; i++) {
                     string fileName = Path.GetFileName(allfiles[i]);
-                    string yearFile = File.GetCreationTime(allfiles[i]).Year.ToString();
-                    string monthFile = File.GetCreationTime(allfiles[i]).Month.ToString();
+                    DateTime fileDate = OrderBy(allfiles[i]);
+                    string yearFile = fileDate.Year.ToString();
+                    string monthFile = fileDate.Month.ToString();
                     Console.Write($"File Num: {i+1} - Name: ");ColorsLines.WriteLineC(fileName,Cyan);
                     CreateFolder(pathDestination, yearFile);
                     CreateFolder(Path.Combine(pathDestination, yearFile), yearFile+"-"+monthFile);
                     MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile), i+1); // PathTooLongException move file
                 }
-                Console.Write("\r\n======> "); ColorsLines.WriteC("PROCESS FINISH!", Green); Console.WriteLine(" <======");
+                Console.Write("Do you wont to delete all empy folders?"); 
+                if(ColorsLines.Ask()) {
+                    DelleteEmptyFolder(pathSource);
+                }
                 PrintErrors();
+                Console.Write("\r\n======> "); ColorsLines.WriteC("PROCESS FINISH!", Green); Console.WriteLine(" <======");
                 Console.Write("Press the "); ColorsLines.WriteC("Y", Green); Console.Write(" key to execute again the program or press an other key to "); ColorsLines.WriteC("exit", Red); Console.Write(": ");
             }while(Console.ReadKey().KeyChar.ToString().ToLower().Equals("y"));
             Console.WriteLine();
+        }
+        public static void ChooseOrder() {
+            bool isOk = true;
+            Console.WriteLine("Choose number to order:");
+            Console.WriteLine(" - 1 - Order by date of creation. (default)");
+            Console.WriteLine(" - 2 - Order by date of last write.");
+            Console.WriteLine(" - 3 - Order by date of last access.");
+            do {
+                try {
+                    orderBy = Convert.ToInt32(Console.ReadKey().KeyChar.ToString()); isOk = false;
+                } catch { Console.WriteLine("This  is not a number. Try again: "); }
+            } while(isOk);
+        }
+        public static DateTime OrderBy(string file) {
+            DateTime res = new DateTime();
+            switch(orderBy) {
+                case 1:
+                    res = File.GetCreationTime(file);
+                break;
+                case 2:
+                    res = File.GetLastWriteTime(file);
+                break;
+                case 3:
+                    res = File.GetLastAccessTime(file);
+                break;
+                default:
+                    res = File.GetCreationTime(file);
+                break;
+            }
+            return res;
         }
         public static string SetDirectory(string dir) {
             Console.Write(dir);
@@ -79,6 +114,17 @@ namespace Corgdirile
                 Console.ResetColor();
             }
             finally { }
+        }
+        private static void DelleteEmptyFolder(string startLocation)
+        {
+            foreach (var directory in Directory.GetDirectories(startLocation))
+            {
+                DelleteEmptyFolder(directory);
+                if (Directory.GetFiles(directory).Length == 0 && Directory.GetDirectories(directory).Length == 0) {
+                    Directory.Delete(directory, false);
+                    ColorsLines.WriteC("Deleted DIR: ", Red);Console.Write(directory);ColorsLines.WriteLineC(" - Done!", Green);
+                }
+            }
         }
         public static string MoveFile(string filePath, string fileName, string newPath, int numFile) {
             Console.Write("    Moving File: "); 

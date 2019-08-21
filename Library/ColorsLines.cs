@@ -5,6 +5,12 @@ namespace Corgdirile.Library
     public static class ColorsLines
     {
         public enum SetColor : int { Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, DarkGray, Gray, Blue, Green, Cyan, Red, Magenta, Yellow, White };
+        public static bool Ask() {
+            Console.Write("(Yes = ");ColorsLines.WriteC("Y", SetColor.Green);
+            Console.Write(")/(No = ");
+            ColorsLines.WriteC("Another One", SetColor.Red);Console.Write("): ");
+            return Console.ReadKey().KeyChar.ToString().ToLower().Equals("y");
+        }
         public static void WriteC(string write, SetColor color)
         {
             switch (color)
