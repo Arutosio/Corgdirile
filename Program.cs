@@ -14,6 +14,7 @@ namespace Corgdirile
         public static int orderBy = 0;
         static void Main(string[] args)
         {
+            bool isRenameFile = false;
             Console.WriteLine("  ---        <-_ Welcome Corgdirile by Arutosio_->        ---  ");
             Console.Write("  ~  "); ColorsLines.WriteC("For more info: https://github.com/Arutosio/Corgdirile", Cyan); Console.WriteLine("  ~  ");
             do {
@@ -23,20 +24,29 @@ namespace Corgdirile
                 LineFase("Setup");
                 string pathSource = SetDirectory("Write the files path: ");
                 string pathDestination = SetDirectory("Write the destination path: ");
+                Console.Write("Press the "); ColorsLines.WriteC("Y", Green); Console.Write(" Do you want rename files with the num count? "); ColorsLines.WriteC("exit", Red); Console.Write(": ");
+                isRenameFile = Console.ReadKey().KeyChar.ToString().ToLower().Equals("y");
                 ChooseOrder();
                 //string[] allfiles = Directory.GetFileSystemEntries(pathSource);
                 // Fase Processing..
                 LineFase("Processing");
                 string[] allfiles = Directory.GetFiles(pathSource, "*", SearchOption.AllDirectories);
-                for (int i = 0; i < allfiles.Length; i++) {
-                    string fileName = Path.GetFileName(allfiles[i]);
-                    DateTime fileDate = OrderBy(allfiles[i]);
+                FileInfo[] allFileInfos = new FileInfo[allfiles.Length];
+                for(uint i = 0; i < allfiles.Length; i++)
+                {
+                    allFileInfos[i] = new FileInfo(allfiles[i]);
+                }
+
+                for (int i = 0; i < allFileInfos.Length; i++) {
+                    DateTime fileDate = OrderBy(allFileInfos[i]);
                     string yearFile = fileDate.Year.ToString();
                     string monthFile = fileDate.Month.ToString();
-                    Console.Write($"File Num: {i+1} - Name: ");ColorsLines.WriteLineC(fileName,Cyan);
+                    Console.Write($"File Num: {i+1} - Name: ");ColorsLines.WriteLineC(allFileInfos[i].Name, Cyan);
                     CreateFolder(pathDestination, yearFile);
                     CreateFolder(Path.Combine(pathDestination, yearFile), yearFile+"-"+monthFile);
-                    MoveFile(allfiles[i], fileName, Path.Combine(pathDestination, yearFile, yearFile+"-"+monthFile), i+1); // PathTooLongException move file
+                    string fullPath = Path.Combine(pathDestination, yearFile, $"{yearFile}-{monthFile}");
+                    
+                    MoveFile(allFileInfos[i], fullPath, i+1, isRenameFile); // PathTooLongException move file
                 }
                 Console.Write("Do you wont to delete all empy folders?"); 
                 if(ColorsLines.Ask()) {
@@ -60,20 +70,23 @@ namespace Corgdirile
                 } catch { Console.WriteLine("This  is not a number. Try again: "); }
             } while(isOk);
         }
-        public static DateTime OrderBy(string file) {
+        public static DateTime OrderBy(FileInfo file) {
             DateTime res = new DateTime();
             switch(orderBy) {
                 case 1:
-                    res = File.GetCreationTime(file);
+                    res = file.CreationTime;
                 break;
                 case 2:
-                    res = File.GetLastWriteTime(file);
+                    res = file.LastWriteTime;
                 break;
                 case 3:
-                    res = File.GetLastAccessTime(file);
+                    res = file.LastAccessTime;
+                break;
+                case 4:
+                    res = file.CreationTime; // to change
                 break;
                 default:
-                    res = File.GetCreationTime(file);
+                    res = file.CreationTime;
                 break;
             }
             return res;
@@ -126,18 +139,29 @@ namespace Corgdirile
                 }
             }
         }
-        public static string MoveFile(string filePath, string fileName, string newPath, int numFile) {
+        public static void MoveFile(FileInfo fi, string newPath, int numFile, bool isRenameFile) {
             Console.Write("    Moving File: "); 
-            ColorsLines.WriteLineC(filePath, DarkYellow);
+            ColorsLines.WriteLineC(fi.FullName, DarkYellow);
             try {
-                File.Move(filePath, Path.Combine(newPath, fileName)); // PathTooLongException move file
-                Console.Write("   in to "); ColorsLines.WriteC(newPath+'/', Yellow); ColorsLines.WriteC(fileName, Cyan);
+                //string nameOk = NameAdaptingToNotOvveride(Path.GetFileNameWithoutExtension(fi.Name), Path.Combine(newPath, fi.Name), fi.Extension);
+                //nameOk += fi.Extension;
+                //File.Move(fi.FullName, Path.Combine(newPath, fileName)); // PathTooLongException move file
+                if(isRenameFile)
+                {
+                    Console.Write("   in to "); ColorsLines.WriteC(newPath+'\\', Yellow); ColorsLines.WriteC(numFile.ToString()+fi.Extension, Cyan);
+                    fi.MoveTo(Path.Combine(newPath, $"{numFile}{fi.Extension}"), false);
+                }
+                else
+                {
+                    Console.Write("   in to "); ColorsLines.WriteC(newPath+'\\', Yellow); ColorsLines.WriteC(fi.Name, Cyan);
+                    fi.MoveTo(Path.Combine(newPath, fi.Name), false);
+                }
                 Console.Write(" ... "); ColorsLines.WriteLineC("Done!\r\n", Green);
             } catch (Exception e) {
                 Console.Write(" ... "); ColorsLines.WriteLineC("ERROR: \r\n", Red);
-                errorList.Add($"Error with file N:{numFile} - {filePath} MSG:\r\n {e}");
+                errorList.Add($"Error with file N:{numFile} - {fi.FullName} MSG:\r\n {e}");
             }
-            return newPath;
+            //return newPath;
         }
         public static void PrintErrors() {
             Console.Write("Do you want print the error files?"); ColorsLines.WriteC("Y", Green);Console.Write('/');ColorsLines.WriteC("AnyKey", Red);
@@ -153,6 +177,26 @@ namespace Corgdirile
             ColorsLines.WriteC(text, Black);
             Console.BackgroundColor = ConsoleColor.White; Console.Write("::::::::::::::::::::::");
             Console.ResetColor(); Console.WriteLine();
+        }
+        public static string NameAdaptingToNotOvveride(string name, string destinationPath, string fiExtention)
+        {
+            string ret = name;
+            if(File.Exists(Path.Combine(destinationPath, ret+fiExtention)))
+            {
+                if(ret.Contains("-c"))
+                {
+                    try {
+                        uint n = uint.Parse(ret.Substring(ret.IndexOf("-c")+1, ret.Length));
+                        ret.Replace($"-c{n}",$"-c{n+1}");
+                    } catch { Console.WriteLine("Non è stato possibile spostare questo file."); }
+                }
+                else
+                {
+                    ret = ret + "-c1";
+                }
+                NameAdaptingToNotOvveride(ret, destinationPath, fiExtention);
+            }
+            return ret;
         }
     }
 }
